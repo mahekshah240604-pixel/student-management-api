@@ -114,8 +114,8 @@ $validated['og_meta_description'] =
 
 $student = Student::create($validated);
 
-       $student->image_url = $student->image
-    ? secure_asset('storage/' . $student->image)
+     $student->image_url = $student->image
+    ? 'https://student-management-api-production-183e.up.railway.app/storage/' . $student->image
     : null;
 
         return response()->json([
