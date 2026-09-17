@@ -48,18 +48,39 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email',
-            'mobile' => 'required|string|max:15',
-            'course' => 'required|string|max:255',
-            'address' => 'required|string',
-            'class' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+    'name' => 'required|string|max:255',
+    'email' => 'required|email|unique:students,email',
+    'mobile' => 'required|string|max:15',
+    'course' => 'required|string|max:255',
+    'address' => 'required|string',
+    'class' => 'required|string|max:255',
+    'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+    // SEO
+    'seo_meta_title' => 'nullable|string|max:255',
+    'seo_meta_description' => 'nullable|string',
+    'seo_meta_keywords' => 'nullable|string',
+    'seo_canonical' => 'nullable|url|max:255',
+    'seo_meta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+    // Open Graph
+    'og_meta_title' => 'nullable|string|max:255',
+    'og_meta_description' => 'nullable|string',
+    'og_meta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+]);
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('students', 'public');
         }
+        if ($request->hasFile('seo_meta_image')) {
+    $validated['seo_meta_image'] = $request->file('seo_meta_image')
+        ->store('students/seo', 'public');
+}
+
+if ($request->hasFile('og_meta_image')) {
+    $validated['og_meta_image'] = $request->file('og_meta_image')
+        ->store('students/og', 'public');
+}
                 $baseSlug = Str::slug($validated['name']);
         $slug = $baseSlug;
         $count = 1;
@@ -84,28 +105,47 @@ class StudentController extends Controller
     }
 
     public function show(Student $student)
-    {
-        $student->image_url = $student->image
-            ? asset('storage/' . $student->image)
-            : null;
+{
+    $student->image_url = $student->image
+        ? asset('storage/' . $student->image)
+        : null;
 
-        return response()->json([
-            'success' => true,
-            'data' => $student
-        ]);
-    }
+    $student->seo_meta_image_url = $student->seo_meta_image
+        ? asset('storage/' . $student->seo_meta_image)
+        : null;
 
+    $student->og_meta_image_url = $student->og_meta_image
+        ? asset('storage/' . $student->og_meta_image)
+        : null;
+
+    return response()->json([
+        'success' => true,
+        'data' => $student
+    ]);
+}
     public function update(Request $request, Student $student)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:students,email,' . $student->id,
-            'mobile' => 'required|string|max:15',
-            'course' => 'required|string|max:255',
-            'address' => 'required|string',
-            'class' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+    'name' => 'required|string|max:255',
+    'email' => 'required|email|unique:students,email,' . $student->id,
+    'mobile' => 'required|string|max:15',
+    'course' => 'required|string|max:255',
+    'address' => 'required|string',
+    'class' => 'required|string|max:255',
+    'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+    // SEO
+    'seo_meta_title' => 'nullable|string|max:255',
+    'seo_meta_description' => 'nullable|string',
+    'seo_meta_keywords' => 'nullable|string',
+    'seo_canonical' => 'nullable|url|max:255',
+    'seo_meta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
+    // Open Graph
+    'og_meta_title' => 'nullable|string|max:255',
+    'og_meta_description' => 'nullable|string',
+    'og_meta_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+]);
 
         if ($request->hasFile('image')) {
 
@@ -118,6 +158,25 @@ class StudentController extends Controller
                 'public'
             );
         }
+        if ($request->hasFile('seo_meta_image')) {
+
+    if ($student->seo_meta_image) {
+        Storage::disk('public')->delete($student->seo_meta_image);
+    }
+
+    $validated['seo_meta_image'] = $request->file('seo_meta_image')
+        ->store('students/seo', 'public');
+}
+
+if ($request->hasFile('og_meta_image')) {
+
+    if ($student->og_meta_image) {
+        Storage::disk('public')->delete($student->og_meta_image);
+    }
+
+    $validated['og_meta_image'] = $request->file('og_meta_image')
+        ->store('students/og', 'public');
+}
         $baseSlug = Str::slug($validated['name']);
 $slug = $baseSlug;
 $count = 1;
@@ -154,6 +213,14 @@ $validated['slug'] = $slug;
         ? asset('storage/' . $student->image)
         : null;
 
+    $student->seo_meta_image_url = $student->seo_meta_image
+        ? asset('storage/' . $student->seo_meta_image)
+        : null;
+
+    $student->og_meta_image_url = $student->og_meta_image
+        ? asset('storage/' . $student->og_meta_image)
+        : null;
+
     return response()->json([
         'success' => true,
         'data' => $student
@@ -161,16 +228,28 @@ $validated['slug'] = $slug;
 }
 
     public function destroy(Student $student)
-    {
-        if ($student->image) {
-            Storage::disk('public')->delete($student->image);
-        }
-
-        $student->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Student deleted successfully'
-        ]);
+{
+    // Main student image
+    if ($student->image) {
+        Storage::disk('public')->delete($student->image);
     }
+
+    // SEO image
+    if ($student->seo_meta_image) {
+        Storage::disk('public')->delete($student->seo_meta_image);
+    }
+
+    // OG image
+    if ($student->og_meta_image) {
+        Storage::disk('public')->delete($student->og_meta_image);
+    }
+
+    // Delete student
+    $student->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Student deleted successfully'
+    ]);
+}
 }
