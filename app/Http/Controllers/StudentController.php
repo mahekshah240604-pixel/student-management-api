@@ -27,13 +27,13 @@ class StudentController extends Controller
         ->latest()
         ->paginate(5);
 
-    $students->getCollection()->transform(function ($student) {
-        $student->image_url = $student->image
-            ? asset('storage/' . $student->image)
-            : null;
+   $students->getCollection()->transform(function ($student) {
+    $student->image_url = $student->image
+        ? 'https://student-management-api-production-183e.up.railway.app/storage/' . $student->image
+        : null;
 
-        return $student;
-    });
+    return $student;
+});
 
     return response()->json([
         'success' => true,
