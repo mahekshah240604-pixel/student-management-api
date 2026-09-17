@@ -90,12 +90,33 @@ if ($request->hasFile('og_meta_image')) {
             $count++;
         }
 
-        $validated['slug'] = $slug;
-        $student = Student::create($validated);
+       $validated['slug'] = $slug;
 
-        $student->image_url = $student->image
-            ? asset('storage/' . $student->image)
-            : null;
+// Automatic SEO data
+$validated['seo_meta_title'] =
+    $validated['name'] . ' - ' . $validated['course'] . ' Student Profile';
+
+$validated['seo_meta_description'] =
+    "View {$validated['name']}'s {$validated['course']} student profile, course, class and student information.";
+
+$validated['seo_meta_keywords'] =
+    "{$validated['name']}, {$validated['course']} student, student profile, {$validated['course']}, student management";
+
+$validated['seo_canonical'] =
+    'https://student-management-react-production.up.railway.app/students/' . $validated['slug'];
+
+// Automatic Open Graph data
+$validated['og_meta_title'] =
+    $validated['name'] . ' - ' . $validated['course'] . ' Student Profile';
+
+$validated['og_meta_description'] =
+    "View {$validated['name']}'s student profile and academic information.";
+
+$student = Student::create($validated);
+
+       $student->image_url = $student->image
+    ? secure_asset('storage/' . $student->image)
+    : null;
 
         return response()->json([
             'success' => true,
